@@ -1,0 +1,32 @@
+package com.ai.openai.advanced.controller;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ChatController {
+
+    private final ChatClient chatClient;
+
+    public ChatController(ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
+
+    @GetMapping("/ai/chat")
+    public String chat(@RequestParam("msg") String message) {
+        return chatClient.prompt()
+                .system("""
+                        You are helpful HR assistant who can answer queries on HR policies 
+                        like leave policy, benefits, employment contracts. 
+                        If there are any other questions asked, 
+                        politely respond that its out of your scope.
+                        """)
+                .user(message)
+                .call()
+                .content();
+    }
+}
