@@ -19,12 +19,6 @@ public class ChatController {
     @GetMapping("/ai/chat")
     public String chat(@RequestParam("msg") String message) {
         return chatClient.prompt()
-                .system("""
-                        You are helpful HR assistant who can answer queries on HR policies 
-                        like leave policy, benefits, employment contracts. 
-                        If there are any other questions asked, 
-                        politely respond that its out of your scope.
-                        """)
                 .user(message)
                 .call()
                 .content();
