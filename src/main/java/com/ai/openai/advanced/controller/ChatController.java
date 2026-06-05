@@ -1,6 +1,7 @@
 package com.ai.openai.advanced.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ public class ChatController {
     @GetMapping("/ai/chat")
     public String chat(@RequestParam("msg") String message) {
         return chatClient.prompt()
+                .advisors(new SimpleLoggerAdvisor())
                 .user(message)
                 .call()
                 .content();
