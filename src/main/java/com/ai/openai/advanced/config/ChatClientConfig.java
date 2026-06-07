@@ -2,7 +2,10 @@ package com.ai.openai.advanced.config;
 
 import com.ai.openai.advanced.advisor.TokenUsageAuditAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +25,15 @@ public class ChatClientConfig {
                         If there are any other questions asked, 
                         politely respond that its out of your scope.
                         """)
-                .defaultUser("How can you help me?").build();
+                .defaultUser("How can you help me?")
+                .build();
+    }
+
+    @Bean("chatMemoryChatClient")
+    public ChatClient chatMemoryChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+        Advisor chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+        Advisor loggerAdvisor = new SimpleLoggerAdvisor();
+        return chatClientBuilder.defaultAdvisors(chatMemoryAdvisor, loggerAdvisor)
+                .build();
     }
 }
