@@ -4,6 +4,16 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+    vectorstore:
+      qdrant:
+        initialize-schema: true
+        host: localhost
+        port: 6334
+        collection-name: myai
+  docker:
+    compose:
+      stop:
+        command: down
 logging:
   level:
     org:
