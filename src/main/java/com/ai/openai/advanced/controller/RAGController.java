@@ -25,6 +25,9 @@ public class RAGController {
     @Value("classpath:/promptTemplates/systemPromptRandomDataTemplate.st")
     private Resource promptTemplate;
 
+    @Value("classpath:/promptTemplates/systemPromptHRPolicyTemplate.st")
+    private Resource promptHRPolicy;
+
     public RAGController(@Qualifier("chatMemoryChatClient") ChatClient chatClient, VectorStore vectorStore) {
         this.chatClient = chatClient;
         this.vectorStore = vectorStore;
@@ -51,5 +54,27 @@ public class RAGController {
         return ResponseEntity.ok().body(answer);
     }
 
+
+    @GetMapping("/ai/pdf/chat")
+    public ResponseEntity<String> pdfChat(@RequestHeader("username") String username, @RequestParam("msg") String message) {
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(message)
+                .topK(3)
+                .similarityThreshold(0.5)
+                .build();
+        List<Document> docs = vectorStore.similaritySearch(searchRequest);
+        String context = docs.stream()
+                .map(Document::getText)
+                .collect(Collectors.joining(System.lineSeparator()));
+        String response = chatClient.prompt().system(promptSystemSpec ->
+                promptSystemSpec.text(promptHRPolicy)
+                        .param("documents", context))
+                .advisors(a -> a.param(CONVERSATION_ID, username))
+                .user(message)
+                .call()
+                .content();
+        return ResponseEntity.ok().body(response);
+
+    }
 
 }
