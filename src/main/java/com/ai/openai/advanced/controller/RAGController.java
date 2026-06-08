@@ -57,7 +57,7 @@ public class RAGController {
 
     @GetMapping("/ai/pdf/chat")
     public ResponseEntity<String> pdfChat(@RequestHeader("username") String username, @RequestParam("msg") String message) {
-        SearchRequest searchRequest = SearchRequest.builder()
+        /*SearchRequest searchRequest = SearchRequest.builder()
                 .query(message)
                 .topK(3)
                 .similarityThreshold(0.5)
@@ -65,10 +65,11 @@ public class RAGController {
         List<Document> docs = vectorStore.similaritySearch(searchRequest);
         String context = docs.stream()
                 .map(Document::getText)
-                .collect(Collectors.joining(System.lineSeparator()));
-        String response = chatClient.prompt().system(promptSystemSpec ->
+                .collect(Collectors.joining(System.lineSeparator()));*/
+        String response = chatClient.prompt()
+                /*.system(promptSystemSpec ->
                 promptSystemSpec.text(promptHRPolicy)
-                        .param("documents", context))
+                        .param("documents", context))*/
                 .advisors(a -> a.param(CONVERSATION_ID, username))
                 .user(message)
                 .call()
