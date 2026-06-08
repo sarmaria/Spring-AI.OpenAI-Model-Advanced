@@ -13,7 +13,7 @@ spring:
   docker:
     compose:
       stop:
-        command: down
+        command: down # demo purpose
 logging:
   level:
     org:
