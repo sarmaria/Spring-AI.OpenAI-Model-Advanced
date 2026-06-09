@@ -1,6 +1,7 @@
 package com.ai.openai.advanced.config;
 
 import com.ai.openai.advanced.advisor.TokenUsageAuditAdvisor;
+import com.ai.openai.advanced.tool.TimeTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
@@ -16,12 +17,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ChatClientConfig {
 
+    private final ChatMemory chatMemory;
+
+    public ChatClientConfig(ChatMemory chatMemory) {
+        this.chatMemory = chatMemory;
+    }
+
     @Bean
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder) {
         var chatOptionsBuilder = OpenAiChatOptions.builder().model("gpt-5-nano").maxCompletionTokens(600);
         return chatClientBuilder
                 .defaultOptions(chatOptionsBuilder)
-                .defaultAdvisors(new SimpleLoggerAdvisor(), new TokenUsageAuditAdvisor())
+                .defaultAdvisors(new SimpleLoggerAdvisor(),
+                        new TokenUsageAuditAdvisor())
                 .defaultSystem("""
                         You are helpful HR assistant who can answer queries on HR policies
                         like leave policy, benefits, employment contracts. 
@@ -36,9 +44,12 @@ public class ChatClientConfig {
     public ChatClient chatMemoryChatClient(ChatClient.Builder chatClientBuilder,
                                            ChatMemory chatMemory,
                                            RetrievalAugmentationAdvisor retrievalAugmentationAdvisor) {
-        Advisor chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+        Advisor chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory)
+                .build();
         Advisor loggerAdvisor = new SimpleLoggerAdvisor();
-        return chatClientBuilder.defaultAdvisors(chatMemoryAdvisor, loggerAdvisor, retrievalAugmentationAdvisor)
+        return chatClientBuilder.defaultAdvisors(chatMemoryAdvisor,
+                        loggerAdvisor,
+                        retrievalAugmentationAdvisor)
                 .build();
     }
 
@@ -51,6 +62,17 @@ public class ChatClientConfig {
                 .build();
         return RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(vectorStoreDocumentRetriever)
+                .build();
+    }
+
+    @Bean("timeChatClient")
+    public ChatClient timeChatClient(ChatClient.Builder chatClientBuilder,
+                                     ChatMemory chatMemory, TimeTools timeTools) {
+        Advisor chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+        return chatClientBuilder.defaultAdvisors(new SimpleLoggerAdvisor(),
+                        new TokenUsageAuditAdvisor(),
+                        chatMemoryAdvisor)
+                .defaultTools(timeTools)
                 .build();
     }
 }
